@@ -83,31 +83,33 @@ export default function DescriptionStep({
       <div>
         <h2 className="text-xl font-semibold">Choose your description</h2>
         <p className="text-sm text-neutral-600 mt-1">
-          Claude writes a few ad-ready options based on your USP.
+          Our AI writes a few ad-ready options based on your USP.
         </p>
       </div>
 
-      <div className="flex flex-col gap-1">
-        <label className="text-sm font-medium text-neutral-700">
-          How should we handle your description?
-        </label>
-        <div className="flex flex-wrap gap-2">
-          {modeOptions.map((opt) => (
-            <button
-              key={opt.value}
-              type="button"
-              onClick={() => setMode(opt.value)}
-              className={`px-3 py-1.5 rounded-md border text-sm ${
-                mode === opt.value
-                  ? "border-neutral-900 bg-neutral-900 text-white"
-                  : "border-neutral-300 text-neutral-600"
-              }`}
-            >
-              {opt.label}
-            </button>
-          ))}
+      {hasRawDescription && (
+        <div className="flex flex-col gap-1">
+          <label className="text-sm font-medium text-neutral-700">
+            How should we handle your description?
+          </label>
+          <div className="flex flex-wrap gap-2">
+            {modeOptions.map((opt) => (
+              <button
+                key={opt.value}
+                type="button"
+                onClick={() => setMode(opt.value)}
+                className={`px-3 py-1.5 rounded-md border text-sm ${
+                  mode === opt.value
+                    ? "border-neutral-900 bg-neutral-900 text-white"
+                    : "border-neutral-300 text-neutral-600"
+                }`}
+              >
+                {opt.label}
+              </button>
+            ))}
+          </div>
         </div>
-      </div>
+      )}
 
       <button
         type="button"

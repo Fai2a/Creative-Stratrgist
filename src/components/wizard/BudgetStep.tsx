@@ -78,7 +78,7 @@ export default function BudgetStep({
       <div>
         <h2 className="text-xl font-semibold">Set a budget</h2>
         <p className="text-sm text-neutral-600 mt-1">
-          Claude proposes a realistic spend plan - always as a range, never a
+          Our AI proposes a realistic spend plan - always as a range, never a
           guarantee.
         </p>
       </div>

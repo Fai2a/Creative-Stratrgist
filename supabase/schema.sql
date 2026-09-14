@@ -90,3 +90,81 @@ create policy "Users can delete their own product images"
 create policy "Anyone can view product images"
   on storage.objects for select
   using (bucket_id = 'product-images');
+
+-- ---------------------------------------------------------------------------
+-- Phase 2: ad copy generation (/api/content)
+-- If your project already ran the block above, you only need to run this
+-- section - it's safe to paste into the SQL editor on its own.
+-- ---------------------------------------------------------------------------
+
+create table if not exists public.ad_content (
+  id uuid primary key default gen_random_uuid(),
+  campaign_id uuid not null unique references public.campaigns(id) on delete cascade,
+  user_id uuid not null references auth.users(id) on delete cascade,
+
+  meta jsonb not null,
+  google jsonb not null,
+  tiktok jsonb not null,
+
+  created_at timestamptz not null default now()
+);
+
+alter table public.ad_content enable row level security;
+
+create policy "Users can view their own ad content"
+  on public.ad_content for select
+  using (auth.uid() = user_id);
+
+create policy "Users can insert their own ad content"
+  on public.ad_content for insert
+  with check (auth.uid() = user_id);
+
+create policy "Users can update their own ad content"
+  on public.ad_content for update
+  using (auth.uid() = user_id)
+  with check (auth.uid() = user_id);
+
+create policy "Users can delete their own ad content"
+  on public.ad_content for delete
+  using (auth.uid() = user_id);
+
+-- ---------------------------------------------------------------------------
+-- Phase 2: competitor analysis (/api/competitor-analysis)
+-- If your project already ran the blocks above, you only need to run this
+-- section - it's safe to paste into the SQL editor on its own.
+-- ---------------------------------------------------------------------------
+
+create table if not exists public.competitor_analyses (
+  id uuid primary key default gen_random_uuid(),
+  campaign_id uuid not null unique references public.campaigns(id) on delete cascade,
+  user_id uuid not null references auth.users(id) on delete cascade,
+
+  -- The competitor list the user entered, so the form can be restored.
+  competitors jsonb not null,
+
+  competitor_insights jsonb not null,
+  overall_differentiation_strategy text not null,
+  suggested_messaging_angle text not null,
+  caveat text,
+
+  created_at timestamptz not null default now()
+);
+
+alter table public.competitor_analyses enable row level security;
+
+create policy "Users can view their own competitor analyses"
+  on public.competitor_analyses for select
+  using (auth.uid() = user_id);
+
+create policy "Users can insert their own competitor analyses"
+  on public.competitor_analyses for insert
+  with check (auth.uid() = user_id);
+
+create policy "Users can update their own competitor analyses"
+  on public.competitor_analyses for update
+  using (auth.uid() = user_id)
+  with check (auth.uid() = user_id);
+
+create policy "Users can delete their own competitor analyses"
+  on public.competitor_analyses for delete
+  using (auth.uid() = user_id);

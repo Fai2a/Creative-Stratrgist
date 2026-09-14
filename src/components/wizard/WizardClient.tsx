@@ -77,7 +77,11 @@ export default function WizardClient() {
       setStep(6);
     } catch (err) {
       setSaveError(
-        err instanceof Error ? err.message : "Failed to save campaign.",
+        err instanceof Error
+          ? err.message
+          : err && typeof err === "object" && "message" in err
+            ? String((err as { message: unknown }).message)
+            : "Failed to save campaign.",
       );
     } finally {
       setApproving(false);

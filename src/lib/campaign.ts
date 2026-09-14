@@ -1,4 +1,9 @@
-import type { BudgetResponse } from "@/lib/schemas";
+import type {
+  BudgetResponse,
+  CompetitorAnalysisResponse,
+  CompetitorInput,
+  ContentResponse,
+} from "@/lib/schemas";
 
 export type CampaignMode = "brand" | "general";
 export type Gender = "all" | "male" | "female";
@@ -30,6 +35,30 @@ export interface Campaign {
   budget_reasoning: string;
   budget_warning: string | null;
   status: "draft" | "active";
+  created_at: string;
+}
+
+/** Shape of a row in the `ad_content` table (Phase 2). */
+export interface AdContent {
+  id: string;
+  campaign_id: string;
+  user_id: string;
+  meta: ContentResponse["meta"];
+  google: ContentResponse["google"];
+  tiktok: ContentResponse["tiktok"];
+  created_at: string;
+}
+
+/** Shape of a row in the `competitor_analyses` table (Phase 2). */
+export interface CompetitorAnalysis {
+  id: string;
+  campaign_id: string;
+  user_id: string;
+  competitors: CompetitorInput[];
+  competitor_insights: CompetitorAnalysisResponse["competitor_insights"];
+  overall_differentiation_strategy: string;
+  suggested_messaging_angle: string;
+  caveat: string | null;
   created_at: string;
 }
 
@@ -85,10 +114,33 @@ export const INITIAL_WIZARD_STATE: WizardState = {
 };
 
 export function buildAudienceSummary(state: WizardState): string {
-  const genderLabel =
-    state.gender === "all" ? "all genders" : `${state.gender}s`;
-  return `Ages ${state.ageMin}-${state.ageMax}, ${genderLabel}, based in ${
-    state.location || "an unspecified location"
+  return formatAudienceSummary(
+    state.ageMin,
+    state.ageMax,
+    state.gender,
+    state.location,
+  );
+}
+
+/** Same audience summary format, built from a saved campaign row instead. */
+export function buildAudienceSummaryFromCampaign(campaign: Campaign): string {
+  return formatAudienceSummary(
+    campaign.age_min,
+    campaign.age_max,
+    campaign.gender,
+    campaign.location,
+  );
+}
+
+function formatAudienceSummary(
+  ageMin: number,
+  ageMax: number,
+  gender: Gender,
+  location: string,
+): string {
+  const genderLabel = gender === "all" ? "all genders" : `${gender}s`;
+  return `Ages ${ageMin}-${ageMax}, ${genderLabel}, based in ${
+    location || "an unspecified location"
   }.`;
 }
 

@@ -31,30 +31,32 @@ export default async function DashboardPage() {
         ) : (
           <ul className="flex flex-col gap-3">
             {campaigns.map((c) => (
-              <li
-                key={c.id}
-                className="rounded-lg border border-neutral-200 p-4 flex items-center gap-4"
-              >
-                {c.product_image_url && (
-                  <Image
-                    src={c.product_image_url}
-                    alt={c.product_name}
-                    width={56}
-                    height={56}
-                    unoptimized
-                    className="h-14 w-14 object-cover rounded-md border border-neutral-200 shrink-0"
-                  />
-                )}
-                <div className="flex-1">
-                  <div className="font-medium">{c.product_name}</div>
-                  <div className="text-sm text-neutral-500">
-                    {c.industry} ·{" "}
-                    {new Date(c.created_at).toLocaleDateString()}
+              <li key={c.id}>
+                <Link
+                  href={`/dashboard/${c.id}`}
+                  className="rounded-lg border border-neutral-200 p-4 flex items-center gap-4 hover:border-neutral-400 transition"
+                >
+                  {c.product_image_url && (
+                    <Image
+                      src={c.product_image_url}
+                      alt={c.product_name}
+                      width={56}
+                      height={56}
+                      unoptimized
+                      className="h-14 w-14 object-cover rounded-md border border-neutral-200 shrink-0"
+                    />
+                  )}
+                  <div className="flex-1">
+                    <div className="font-medium">{c.product_name}</div>
+                    <div className="text-sm text-neutral-500">
+                      {c.industry} ·{" "}
+                      {new Date(c.created_at).toLocaleDateString()}
+                    </div>
                   </div>
-                </div>
-                <span className="text-xs px-2 py-1 rounded-full bg-neutral-100 text-neutral-600">
-                  {c.status}
-                </span>
+                  <span className="text-xs px-2 py-1 rounded-full bg-neutral-100 text-neutral-600">
+                    {c.status}
+                  </span>
+                </Link>
               </li>
             ))}
           </ul>
