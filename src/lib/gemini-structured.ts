@@ -1,8 +1,52 @@
+import { ApiError } from "@google/genai";
+import { NextResponse } from "next/server";
 import { z } from "zod";
 import { genAI, GEMINI_MODEL } from "@/lib/gemini";
 
 const RETRY_INSTRUCTION =
   "Your previous response could not be parsed as valid JSON matching the required schema. Return ONLY valid JSON matching the schema - no markdown, no commentary, no other text.";
+
+/** Thrown when Gemini's free-tier rate limit (requests/minute) is hit. */
+export class GeminiRateLimitError extends Error {
+  constructor() {
+    super("Gemini free-tier rate limit reached");
+    this.name = "GeminiRateLimitError";
+  }
+}
+
+/**
+ * Runs one interaction and returns its parsed JSON output (or null if the
+ * call produced no text or unparseable text). A 429 is converted to
+ * GeminiRateLimitError and re-thrown immediately - retrying it would just
+ * burn another request against the same exhausted per-minute quota.
+ */
+async function createAndParse(
+  systemPrompt: string,
+  input: string,
+  schema?: Record<string, unknown>,
+): Promise<unknown> {
+  try {
+    const interaction = await genAI.interactions.create({
+      model: GEMINI_MODEL,
+      system_instruction: systemPrompt,
+      input,
+      response_format: schema
+        ? { type: "text", mime_type: "application/json", schema }
+        : { type: "text", mime_type: "application/json" },
+    });
+    if (!interaction.output_text) return null;
+    try {
+      return JSON.parse(interaction.output_text);
+    } catch {
+      return null;
+    }
+  } catch (err) {
+    if (err instanceof ApiError && err.status === 429) {
+      throw new GeminiRateLimitError();
+    }
+    return null;
+  }
+}
 
 /**
  * Calls Gemini with a schema-constrained structured output (response_format)
@@ -23,53 +67,16 @@ export async function callGeminiStructured<Schema extends z.ZodTypeAny>(
     unknown
   >;
 
-  // First attempt: structured output constrained to the schema.
-  const attemptStructured = async () => {
-    try {
-      const interaction = await genAI.interactions.create({
-        model: GEMINI_MODEL,
-        system_instruction: systemPrompt,
-        input: userContent,
-        response_format: {
-          type: "text",
-          mime_type: "application/json",
-          schema: jsonSchema,
-        },
-      });
-      if (!interaction.output_text) return null;
-      return JSON.parse(interaction.output_text);
-    } catch {
-      return null;
-    }
-  };
-
-  // Retry: plain JSON-mode with an explicit instruction, in case the
-  // schema-constrained call itself failed (not just the parsed output).
-  const attemptPlainJson = async () => {
-    const interaction = await genAI.interactions.create({
-      model: GEMINI_MODEL,
-      system_instruction: systemPrompt,
-      input: `${userContent}\n\n${RETRY_INSTRUCTION}`,
-      response_format: {
-        type: "text",
-        mime_type: "application/json",
-      },
-    });
-    if (!interaction.output_text) return null;
-    try {
-      return JSON.parse(interaction.output_text);
-    } catch {
-      return null;
-    }
-  };
-
-  const firstAttempt = await attemptStructured();
+  const firstAttempt = await createAndParse(systemPrompt, userContent, jsonSchema);
   const firstResult = schema.safeParse(firstAttempt);
   if (firstResult.success) {
     return firstResult.data;
   }
 
-  const secondAttempt = await attemptPlainJson();
+  const secondAttempt = await createAndParse(
+    systemPrompt,
+    `${userContent}\n\n${RETRY_INSTRUCTION}`,
+  );
   const secondResult = schema.safeParse(secondAttempt);
   if (!secondResult.success) {
     throw new Error(
@@ -77,4 +84,24 @@ export async function callGeminiStructured<Schema extends z.ZodTypeAny>(
     );
   }
   return secondResult.data;
+}
+
+/**
+ * Shared catch-block handler for the AI routes: logs the error and returns
+ * the right response - a distinct, retryable "rate_limited" for Gemini's
+ * free-tier per-minute cap, a generic failure otherwise.
+ */
+export function geminiErrorResponse(routeLabel: string, err: unknown) {
+  console.error(routeLabel, err);
+  if (err instanceof GeminiRateLimitError) {
+    return NextResponse.json(
+      {
+        error: "rate_limited",
+        message:
+          "You're generating content faster than the free Gemini tier allows. Wait about a minute and try again.",
+      },
+      { status: 429 },
+    );
+  }
+  return NextResponse.json({ error: "generation_failed" }, { status: 502 });
 }

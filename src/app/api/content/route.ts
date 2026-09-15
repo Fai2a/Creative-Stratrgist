@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { callGeminiStructured } from "@/lib/gemini-structured";
+import { callGeminiStructured, geminiErrorResponse } from "@/lib/gemini-structured";
 import { createClient } from "@/lib/supabase/server";
 import { AD_CTA_OPTIONS, ContentRequestSchema, ContentResponseSchema } from "@/lib/schemas";
 
@@ -68,7 +68,6 @@ export async function POST(req: NextRequest) {
     );
     return NextResponse.json(result);
   } catch (err) {
-    console.error("[/api/content]", err);
-    return NextResponse.json({ error: "generation_failed" }, { status: 502 });
+    return geminiErrorResponse("[/api/content]", err);
   }
 }

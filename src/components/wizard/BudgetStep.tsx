@@ -57,12 +57,17 @@ export default function BudgetStep({
         }),
       });
 
+      const data = await res.json();
+
       if (!res.ok) {
-        setError("Something went wrong building a budget plan. Please try again.");
+        setError(
+          data.error === "rate_limited"
+            ? data.message
+            : "Something went wrong building a budget plan. Please try again.",
+        );
         return;
       }
 
-      const data = await res.json();
       update({ budgetResult: data });
     } catch {
       setError("Network error - please try again.");

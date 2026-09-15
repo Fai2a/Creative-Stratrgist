@@ -46,12 +46,17 @@ export default function AdContentPanel({
         }),
       });
 
+      const data: ContentResponse & { error?: string; message?: string } =
+        await res.json();
+
       if (!res.ok) {
-        setError("Something went wrong generating ad content. Please try again.");
+        setError(
+          data.error === "rate_limited" && data.message
+            ? data.message
+            : "Something went wrong generating ad content. Please try again.",
+        );
         return;
       }
-
-      const data: ContentResponse = await res.json();
 
       const supabase = createClient();
       const {

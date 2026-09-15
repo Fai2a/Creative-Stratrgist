@@ -48,7 +48,11 @@ export default function DescriptionStep({
       const data = await res.json();
 
       if (!res.ok) {
-        setError("Something went wrong generating descriptions. Please try again.");
+        setError(
+          data.error === "rate_limited"
+            ? data.message
+            : "Something went wrong generating descriptions. Please try again.",
+        );
         return;
       }
 

@@ -80,12 +80,19 @@ export default function CompetitorAnalysisPanel({
         }),
       });
 
+      const data: CompetitorAnalysisResponse & {
+        error?: string;
+        message?: string;
+      } = await res.json();
+
       if (!res.ok) {
-        setError("Something went wrong analyzing competitors. Please try again.");
+        setError(
+          data.error === "rate_limited" && data.message
+            ? data.message
+            : "Something went wrong analyzing competitors. Please try again.",
+        );
         return;
       }
-
-      const data: CompetitorAnalysisResponse = await res.json();
 
       const supabase = createClient();
       const {
