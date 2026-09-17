@@ -1,10 +1,12 @@
 import Link from "next/link";
+import { ArrowLeft } from "lucide-react";
 import { notFound } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import type { AdContent, Campaign, CompetitorAnalysis } from "@/lib/campaign";
 import CampaignBriefCard from "@/components/CampaignBriefCard";
 import AdContentPanel from "@/components/content/AdContentPanel";
 import CompetitorAnalysisPanel from "@/components/competitor/CompetitorAnalysisPanel";
+import { cardClass } from "@/lib/ui";
 
 export default async function CampaignDetailPage({
   params,
@@ -37,20 +39,28 @@ export default async function CampaignDetailPage({
     .maybeSingle<CompetitorAnalysis>();
 
   return (
-    <main className="flex-1 px-4 py-12">
+    <main className="flex-1 px-4 py-12 bg-grid">
       <div className="max-w-4xl mx-auto flex flex-col gap-8">
-        <Link href="/dashboard" className="text-sm text-neutral-600 hover:text-neutral-900">
-          ← Back to My Campaigns
+        <Link
+          href="/dashboard"
+          className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground w-fit"
+        >
+          <ArrowLeft className="h-3.5 w-3.5" />
+          Back to My Campaigns
         </Link>
 
         <CampaignBriefCard campaign={campaign} />
 
-        <CompetitorAnalysisPanel
-          campaign={campaign}
-          initialAnalysis={competitorAnalysis ?? null}
-        />
+        <div className={`${cardClass} p-6 sm:p-8`}>
+          <CompetitorAnalysisPanel
+            campaign={campaign}
+            initialAnalysis={competitorAnalysis ?? null}
+          />
+        </div>
 
-        <AdContentPanel campaign={campaign} initialAdContent={adContent ?? null} />
+        <div className={`${cardClass} p-6 sm:p-8`}>
+          <AdContentPanel campaign={campaign} initialAdContent={adContent ?? null} />
+        </div>
       </div>
     </main>
   );

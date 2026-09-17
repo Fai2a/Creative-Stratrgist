@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { Loader2, Plus, Swords, Target, X } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import {
   buildAudienceSummaryFromCampaign,
@@ -8,6 +9,7 @@ import {
   type CompetitorAnalysis,
 } from "@/lib/campaign";
 import type { CompetitorAnalysisResponse, CompetitorInput } from "@/lib/schemas";
+import { buttonClasses, inputClass, sectionEyebrowClass } from "@/lib/ui";
 
 const MAX_COMPETITORS = 5;
 const EMPTY_ROW: CompetitorInput = { name: "", notes: "" };
@@ -134,8 +136,10 @@ export default function CompetitorAnalysisPanel({
   return (
     <div className="flex flex-col gap-6">
       <div>
-        <h2 className="text-xl font-semibold">Competitor analysis</h2>
-        <p className="text-sm text-neutral-600 mt-1">
+        <h2 className="text-xl font-semibold tracking-tight">
+          Competitor analysis
+        </h2>
+        <p className="text-sm text-muted-foreground mt-1">
           Tell us who you&apos;re up against and what you already know about
           them - we don&apos;t browse the web, so the more detail you give,
           the sharper the analysis.
@@ -150,22 +154,23 @@ export default function CompetitorAnalysisPanel({
               placeholder="Competitor name"
               value={c.name}
               onChange={(e) => updateCompetitor(i, { name: e.target.value })}
-              className="w-48 shrink-0 border border-neutral-300 rounded-md px-3 py-2 text-sm"
+              className={`${inputClass} w-44 sm:w-48 shrink-0`}
             />
             <input
               type="text"
               placeholder="What do you know about them? (pricing, positioning, tagline...)"
               value={c.notes}
               onChange={(e) => updateCompetitor(i, { notes: e.target.value })}
-              className="flex-1 border border-neutral-300 rounded-md px-3 py-2 text-sm"
+              className={`${inputClass} flex-1`}
             />
             {competitors.length > 1 && (
               <button
                 type="button"
                 onClick={() => removeCompetitor(i)}
-                className="text-sm text-neutral-500 hover:text-red-600 px-2 py-2"
+                aria-label="Remove competitor"
+                className="text-muted-foreground hover:text-red-600 h-[42px] w-[42px] flex items-center justify-center rounded-lg hover:bg-red-50 transition shrink-0"
               >
-                Remove
+                <X className="h-4 w-4" />
               </button>
             )}
           </div>
@@ -175,9 +180,10 @@ export default function CompetitorAnalysisPanel({
           <button
             type="button"
             onClick={addCompetitor}
-            className="self-start text-sm text-neutral-600 hover:text-neutral-900 underline"
+            className="self-start inline-flex items-center gap-1.5 text-sm text-primary font-medium hover:underline"
           >
-            + Add competitor
+            <Plus className="h-3.5 w-3.5" />
+            Add competitor
           </button>
         )}
       </div>
@@ -186,8 +192,13 @@ export default function CompetitorAnalysisPanel({
         type="button"
         onClick={handleAnalyze}
         disabled={loading}
-        className="self-start bg-neutral-900 text-white rounded-md px-4 py-2 text-sm font-medium disabled:opacity-50"
+        className={buttonClasses("primary", "md", "self-start")}
       >
+        {loading ? (
+          <Loader2 className="h-4 w-4 animate-spin" />
+        ) : (
+          <Swords className="h-4 w-4" />
+        )}
         {loading
           ? "Analyzing..."
           : analysis
@@ -195,12 +206,16 @@ export default function CompetitorAnalysisPanel({
             : "Analyze competitors"}
       </button>
 
-      {error && <p className="text-sm text-red-600">{error}</p>}
+      {error && (
+        <p className="text-sm text-red-600 bg-red-50 border border-red-200 rounded-lg px-3 py-2">
+          {error}
+        </p>
+      )}
 
       {analysis && (
         <div className="flex flex-col gap-4">
           {analysis.caveat && (
-            <p className="text-sm bg-amber-50 border border-amber-200 text-amber-800 rounded-md px-3 py-2">
+            <p className="text-sm bg-amber-50 border border-amber-200 text-amber-800 rounded-lg px-3 py-2">
               {analysis.caveat}
             </p>
           )}
@@ -209,51 +224,43 @@ export default function CompetitorAnalysisPanel({
             {analysis.competitor_insights.map((insight) => (
               <div
                 key={insight.name}
-                className="rounded-lg border border-neutral-200 p-4 flex flex-col gap-2"
+                className="rounded-xl bg-muted p-4 flex flex-col gap-2.5"
               >
                 <h3 className="font-medium">{insight.name}</h3>
                 <div>
-                  <div className="text-xs uppercase tracking-wide text-neutral-500">
-                    Apparent positioning
-                  </div>
-                  <p className="text-sm">{insight.apparent_positioning}</p>
+                  <div className={sectionEyebrowClass}>Apparent positioning</div>
+                  <p className="text-sm mt-0.5">{insight.apparent_positioning}</p>
                 </div>
                 <div>
-                  <div className="text-xs uppercase tracking-wide text-neutral-500">
-                    Strength
-                  </div>
-                  <p className="text-sm">{insight.perceived_strength}</p>
+                  <div className={sectionEyebrowClass}>Strength</div>
+                  <p className="text-sm mt-0.5">{insight.perceived_strength}</p>
                 </div>
                 <div>
-                  <div className="text-xs uppercase tracking-wide text-neutral-500">
-                    Weakness
-                  </div>
-                  <p className="text-sm">{insight.perceived_weakness}</p>
+                  <div className={sectionEyebrowClass}>Weakness</div>
+                  <p className="text-sm mt-0.5">{insight.perceived_weakness}</p>
                 </div>
                 <div>
-                  <div className="text-xs uppercase tracking-wide text-neutral-500">
-                    Your angle
-                  </div>
-                  <p className="text-sm">{insight.differentiation_angle}</p>
+                  <div className={sectionEyebrowClass}>Your angle</div>
+                  <p className="text-sm mt-0.5">{insight.differentiation_angle}</p>
                 </div>
               </div>
             ))}
           </div>
 
-          <div className="rounded-lg border border-neutral-200 p-4 flex flex-col gap-3">
+          <div className="rounded-xl border border-primary/20 bg-primary/5 p-4 flex flex-col gap-3">
+            <div className="flex items-center gap-2 text-primary font-medium text-sm">
+              <Target className="h-4 w-4" />
+              Your differentiation strategy
+            </div>
             <div>
-              <div className="text-xs uppercase tracking-wide text-neutral-500 mb-1">
-                Overall differentiation strategy
-              </div>
-              <p className="text-sm">
+              <div className={sectionEyebrowClass}>Overall strategy</div>
+              <p className="text-sm mt-0.5">
                 {analysis.overall_differentiation_strategy}
               </p>
             </div>
             <div>
-              <div className="text-xs uppercase tracking-wide text-neutral-500 mb-1">
-                Suggested messaging angle
-              </div>
-              <p className="text-sm">{analysis.suggested_messaging_angle}</p>
+              <div className={sectionEyebrowClass}>Suggested messaging angle</div>
+              <p className="text-sm mt-0.5">{analysis.suggested_messaging_angle}</p>
             </div>
           </div>
         </div>

@@ -1,8 +1,10 @@
 "use client";
 
 import { useState } from "react";
+import { Check, Loader2, Sparkles } from "lucide-react";
 import { buildAudienceSummary, type WizardState } from "@/lib/campaign";
 import type { DescriptionMode, DescriptionResponse } from "@/lib/schemas";
+import { buttonClasses, labelClass } from "@/lib/ui";
 
 interface DescriptionStepProps {
   state: WizardState;
@@ -85,27 +87,29 @@ export default function DescriptionStep({
   return (
     <div className="flex flex-col gap-6">
       <div>
-        <h2 className="text-xl font-semibold">Choose your description</h2>
-        <p className="text-sm text-neutral-600 mt-1">
+        <h2 className="text-xl font-semibold tracking-tight">
+          Choose your description
+        </h2>
+        <p className="text-sm text-muted-foreground mt-1">
           Our AI writes a few ad-ready options based on your USP.
         </p>
       </div>
 
       {hasRawDescription && (
-        <div className="flex flex-col gap-1">
-          <label className="text-sm font-medium text-neutral-700">
+        <div className="flex flex-col gap-1.5">
+          <label className={labelClass}>
             How should we handle your description?
           </label>
-          <div className="flex flex-wrap gap-2">
+          <div className="inline-flex flex-wrap gap-2">
             {modeOptions.map((opt) => (
               <button
                 key={opt.value}
                 type="button"
                 onClick={() => setMode(opt.value)}
-                className={`px-3 py-1.5 rounded-md border text-sm ${
+                className={`px-3.5 py-1.5 rounded-full border text-sm transition ${
                   mode === opt.value
-                    ? "border-neutral-900 bg-neutral-900 text-white"
-                    : "border-neutral-300 text-neutral-600"
+                    ? "border-primary bg-primary text-primary-foreground"
+                    : "border-border text-muted-foreground hover:border-neutral-300"
                 }`}
               >
                 {opt.label}
@@ -119,40 +123,57 @@ export default function DescriptionStep({
         type="button"
         onClick={handleGenerate}
         disabled={loading}
-        className="self-start bg-neutral-900 text-white rounded-md px-4 py-2 text-sm font-medium disabled:opacity-50"
+        className={buttonClasses("primary", "md", "self-start")}
       >
+        {loading ? (
+          <Loader2 className="h-4 w-4 animate-spin" />
+        ) : (
+          <Sparkles className="h-4 w-4" />
+        )}
         {loading ? "Generating..." : "Generate options"}
       </button>
 
-      {error && <p className="text-sm text-red-600">{error}</p>}
+      {error && (
+        <p className="text-sm text-red-600 bg-red-50 border border-red-200 rounded-lg px-3 py-2">
+          {error}
+        </p>
+      )}
 
       {options.length > 0 && (
         <div className="flex flex-col gap-3">
-          {options.map((opt, idx) => (
-            <button
-              key={idx}
-              type="button"
-              onClick={() => update({ chosenDescription: opt.text })}
-              className={`text-left rounded-lg border p-4 transition ${
-                state.chosenDescription === opt.text
-                  ? "border-neutral-900 ring-1 ring-neutral-900"
-                  : "border-neutral-200 hover:border-neutral-400"
-              }`}
-            >
-              <div className="text-xs uppercase tracking-wide text-neutral-500 mb-1">
-                {opt.tone}
-              </div>
-              <p className="text-sm">{opt.text}</p>
-            </button>
-          ))}
+          {options.map((opt, idx) => {
+            const selected = state.chosenDescription === opt.text;
+            return (
+              <button
+                key={idx}
+                type="button"
+                onClick={() => update({ chosenDescription: opt.text })}
+                className={`relative text-left rounded-xl border p-4 transition-all duration-150 ${
+                  selected
+                    ? "border-primary ring-2 ring-primary/20 bg-primary/5"
+                    : "border-border hover:border-neutral-300 hover:shadow-sm"
+                }`}
+              >
+                {selected && (
+                  <span className="absolute top-3.5 right-3.5 h-5 w-5 rounded-full bg-primary text-primary-foreground flex items-center justify-center">
+                    <Check className="h-3 w-3" strokeWidth={3} />
+                  </span>
+                )}
+                <div className="text-xs uppercase tracking-wide text-primary font-semibold mb-1.5 pr-6">
+                  {opt.tone}
+                </div>
+                <p className="text-sm leading-relaxed pr-6">{opt.text}</p>
+              </button>
+            );
+          })}
         </div>
       )}
 
-      <div className="flex justify-between">
+      <div className="flex justify-between pt-2">
         <button
           type="button"
           onClick={onBack}
-          className="text-sm text-neutral-600 hover:text-neutral-900"
+          className={buttonClasses("ghost", "md")}
         >
           Back
         </button>
@@ -160,7 +181,7 @@ export default function DescriptionStep({
           type="button"
           disabled={!state.chosenDescription}
           onClick={onNext}
-          className="bg-neutral-900 text-white rounded-md px-5 py-2 text-sm font-medium disabled:opacity-40"
+          className={buttonClasses("primary", "md")}
         >
           Continue
         </button>

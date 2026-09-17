@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { Check, Copy } from "lucide-react";
 
 export default function CopyableLine({ text }: { text: string }) {
   const [copied, setCopied] = useState(false);
@@ -20,11 +21,16 @@ export default function CopyableLine({ text }: { text: string }) {
     <button
       type="button"
       onClick={handleCopy}
-      className="w-full text-left flex items-center justify-between gap-3 rounded-md border border-neutral-200 px-3 py-2 text-sm hover:border-neutral-400 transition"
+      className="w-full text-left flex items-center justify-between gap-3 rounded-lg border border-border bg-card px-3 py-2 text-sm hover:border-primary/40 hover:shadow-sm transition"
     >
-      <span>{text}</span>
-      <span className="text-xs text-neutral-500 shrink-0">
-        {copied ? "Copied!" : "Copy"}
+      <span className="min-w-0 break-words">{text}</span>
+      <span
+        className={`flex items-center gap-1 text-xs shrink-0 ${
+          copied ? "text-emerald-600" : "text-muted-foreground"
+        }`}
+      >
+        {copied ? <Check className="h-3.5 w-3.5" /> : <Copy className="h-3.5 w-3.5" />}
+        {copied ? "Copied" : "Copy"}
       </span>
     </button>
   );

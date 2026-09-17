@@ -2,8 +2,10 @@
 
 import { useState } from "react";
 import Image from "next/image";
+import { ImagePlus, Link2, PencilLine } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import type { WizardState } from "@/lib/campaign";
+import { buttonClasses, inputClass, labelClass } from "@/lib/ui";
 
 interface ProductStepProps {
   state: WizardState;
@@ -66,167 +68,169 @@ export default function ProductStep({
   return (
     <div className="flex flex-col gap-6">
       <div>
-        <h2 className="text-xl font-semibold">Tell us about the product</h2>
-        <p className="text-sm text-neutral-600 mt-1">
+        <h2 className="text-xl font-semibold tracking-tight">
+          Tell us about the product
+        </h2>
+        <p className="text-sm text-muted-foreground mt-1">
           Paste a website to speed things up later, or fill it in by hand.
         </p>
       </div>
 
-      <div className="flex gap-2 text-sm">
+      <div className="inline-flex self-start rounded-lg border border-border bg-muted p-1 text-sm">
         <button
           type="button"
           onClick={() => setIntakeMode("url")}
-          className={`px-3 py-1.5 rounded-md border ${
+          className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md transition ${
             intakeMode === "url"
-              ? "border-neutral-900 bg-neutral-900 text-white"
-              : "border-neutral-300 text-neutral-600"
+              ? "bg-card text-foreground shadow-sm"
+              : "text-muted-foreground hover:text-foreground"
           }`}
         >
-          I have a website
+          <Link2 className="h-3.5 w-3.5" />I have a website
         </button>
         <button
           type="button"
           onClick={() => setIntakeMode("manual")}
-          className={`px-3 py-1.5 rounded-md border ${
+          className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md transition ${
             intakeMode === "manual"
-              ? "border-neutral-900 bg-neutral-900 text-white"
-              : "border-neutral-300 text-neutral-600"
+              ? "bg-card text-foreground shadow-sm"
+              : "text-muted-foreground hover:text-foreground"
           }`}
         >
+          <PencilLine className="h-3.5 w-3.5" />
           I&apos;ll fill it in manually
         </button>
       </div>
 
       {intakeMode === "url" && (
-        <div className="flex flex-col gap-1">
-          <label className="text-sm font-medium text-neutral-700">
-            Website URL
-          </label>
+        <div className="flex flex-col gap-1.5">
+          <label className={labelClass}>Website URL</label>
           <input
             type="url"
             placeholder="https://example.com/product"
             value={state.websiteUrl}
             onChange={(e) => update({ websiteUrl: e.target.value })}
-            className="border border-neutral-300 rounded-md px-3 py-2 text-sm"
+            className={inputClass}
           />
-          <p className="text-xs text-neutral-500">
+          <p className="text-xs text-muted-foreground">
             We&apos;ll use this to auto-fill product details in a future
             update. For now, please complete the fields below too.
           </p>
         </div>
       )}
 
-      <div className="flex flex-col gap-1">
-        <label className="text-sm font-medium text-neutral-700">
-          Product image
-        </label>
-        <input
-          type="file"
-          accept="image/*"
-          onChange={handleImageChange}
-          className="text-sm"
-        />
-        {uploading && <p className="text-xs text-neutral-500">Uploading...</p>}
-        {uploadError && <p className="text-xs text-red-600">{uploadError}</p>}
-        {state.productImageUrl && (
-          <Image
-            src={state.productImageUrl}
-            alt="Product preview"
-            width={96}
-            height={96}
-            className="mt-2 h-24 w-24 object-cover rounded-md border border-neutral-200"
-            unoptimized
+      <div className="flex flex-col gap-1.5">
+        <label className={labelClass}>Product image</label>
+        <label className="flex items-center gap-4 rounded-xl border border-dashed border-border bg-muted/50 px-4 py-4 cursor-pointer hover:border-primary/40 hover:bg-primary/5 transition">
+          <div className="h-16 w-16 rounded-lg bg-card border border-border flex items-center justify-center shrink-0 overflow-hidden">
+            {state.productImageUrl ? (
+              <Image
+                src={state.productImageUrl}
+                alt="Product preview"
+                width={64}
+                height={64}
+                className="h-16 w-16 object-cover"
+                unoptimized
+              />
+            ) : (
+              <ImagePlus className="h-6 w-6 text-neutral-400" />
+            )}
+          </div>
+          <div className="text-sm">
+            <span className="text-primary font-medium">
+              {state.productImageUrl ? "Change image" : "Upload an image"}
+            </span>
+            <p className="text-muted-foreground text-xs mt-0.5">
+              {uploading
+                ? "Uploading..."
+                : "PNG or JPG, shown in your campaign summary"}
+            </p>
+          </div>
+          <input
+            type="file"
+            accept="image/*"
+            onChange={handleImageChange}
+            className="hidden"
           />
-        )}
+        </label>
+        {uploadError && <p className="text-xs text-red-600">{uploadError}</p>}
       </div>
 
       <div className="grid sm:grid-cols-2 gap-4">
-        <div className="flex flex-col gap-1">
-          <label className="text-sm font-medium text-neutral-700">
-            Product name*
-          </label>
+        <div className="flex flex-col gap-1.5">
+          <label className={labelClass}>Product name*</label>
           <input
             type="text"
             value={state.productName}
             onChange={(e) => update({ productName: e.target.value })}
-            className="border border-neutral-300 rounded-md px-3 py-2 text-sm"
+            className={inputClass}
           />
         </div>
 
-        <div className="flex flex-col gap-1">
-          <label className="text-sm font-medium text-neutral-700">
-            Industry*
-          </label>
+        <div className="flex flex-col gap-1.5">
+          <label className={labelClass}>Industry*</label>
           <input
             type="text"
             placeholder="e.g. skincare, SaaS, home goods"
             value={state.industry}
             onChange={(e) => update({ industry: e.target.value })}
-            className="border border-neutral-300 rounded-md px-3 py-2 text-sm"
+            className={inputClass}
           />
         </div>
       </div>
 
-      <div className="flex flex-col gap-1">
-        <label className="text-sm font-medium text-neutral-700">
-          Unique selling point (USP)*
-        </label>
+      <div className="flex flex-col gap-1.5">
+        <label className={labelClass}>Unique selling point (USP)*</label>
         <input
           type="text"
           placeholder="What makes this different from alternatives?"
           value={state.usp}
           onChange={(e) => update({ usp: e.target.value })}
-          className="border border-neutral-300 rounded-md px-3 py-2 text-sm"
+          className={inputClass}
         />
       </div>
 
-      <div className="flex flex-col gap-1">
-        <label className="text-sm font-medium text-neutral-700">
-          Description (optional)
-        </label>
+      <div className="flex flex-col gap-1.5">
+        <label className={labelClass}>Description (optional)</label>
         <textarea
           rows={3}
           placeholder="Paste any existing product description - you'll be able to keep, polish, or rewrite it next."
           value={state.rawDescription}
           onChange={(e) => update({ rawDescription: e.target.value })}
-          className="border border-neutral-300 rounded-md px-3 py-2 text-sm"
+          className={inputClass}
         />
       </div>
 
       <div className="grid sm:grid-cols-2 gap-4">
-        <div className="flex flex-col gap-1">
-          <label className="text-sm font-medium text-neutral-700">
-            Price (optional)
-          </label>
+        <div className="flex flex-col gap-1.5">
+          <label className={labelClass}>Price (optional)</label>
           <input
             type="number"
             min={0}
             step="0.01"
             value={state.price}
             onChange={(e) => update({ price: e.target.value })}
-            className="border border-neutral-300 rounded-md px-3 py-2 text-sm"
+            className={inputClass}
           />
         </div>
         {intakeMode === "manual" && (
-          <div className="flex flex-col gap-1">
-            <label className="text-sm font-medium text-neutral-700">
-              Website (optional)
-            </label>
+          <div className="flex flex-col gap-1.5">
+            <label className={labelClass}>Website (optional)</label>
             <input
               type="url"
               value={state.websiteUrl}
               onChange={(e) => update({ websiteUrl: e.target.value })}
-              className="border border-neutral-300 rounded-md px-3 py-2 text-sm"
+              className={inputClass}
             />
           </div>
         )}
       </div>
 
-      <div className="flex justify-between">
+      <div className="flex justify-between pt-2">
         <button
           type="button"
           onClick={onBack}
-          className="text-sm text-neutral-600 hover:text-neutral-900"
+          className={buttonClasses("ghost", "md")}
         >
           Back
         </button>
@@ -234,7 +238,7 @@ export default function ProductStep({
           type="button"
           disabled={!canContinue}
           onClick={onNext}
-          className="bg-neutral-900 text-white rounded-md px-5 py-2 text-sm font-medium disabled:opacity-40"
+          className={buttonClasses("primary", "md")}
         >
           Continue
         </button>

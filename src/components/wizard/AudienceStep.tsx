@@ -1,4 +1,6 @@
+import { MapPin, ShieldCheck } from "lucide-react";
 import type { Gender, WizardState } from "@/lib/campaign";
+import { buttonClasses, inputClass, labelClass } from "@/lib/ui";
 
 interface AudienceStepProps {
   state: WizardState;
@@ -25,55 +27,60 @@ export default function AudienceStep({
   return (
     <div className="flex flex-col gap-6">
       <div>
-        <h2 className="text-xl font-semibold">Who are you trying to reach?</h2>
-        <p className="text-sm text-neutral-600 mt-1">
-          Basic demographic and location targeting only. We deliberately
-          don&apos;t collect sexual orientation, health, religion, race, or
-          political data - most ad platforms ban targeting on these anyway.
+        <h2 className="text-xl font-semibold tracking-tight">
+          Who are you trying to reach?
+        </h2>
+        <p className="text-sm text-muted-foreground mt-1">
+          Basic demographic and location targeting only.
+        </p>
+      </div>
+
+      <div className="flex items-start gap-3 rounded-xl border border-primary/20 bg-primary/5 px-4 py-3">
+        <ShieldCheck className="h-4 w-4 text-primary mt-0.5 shrink-0" />
+        <p className="text-sm text-muted-foreground">
+          We deliberately don&apos;t collect sexual orientation, health,
+          religion, race, or political data - most ad platforms ban targeting
+          on these anyway.
         </p>
       </div>
 
       <div className="grid sm:grid-cols-2 gap-4">
-        <div className="flex flex-col gap-1">
-          <label className="text-sm font-medium text-neutral-700">
-            Minimum age
-          </label>
+        <div className="flex flex-col gap-1.5">
+          <label className={labelClass}>Minimum age</label>
           <input
             type="number"
             min={13}
             max={99}
             value={state.ageMin}
             onChange={(e) => update({ ageMin: Number(e.target.value) })}
-            className="border border-neutral-300 rounded-md px-3 py-2 text-sm"
+            className={inputClass}
           />
         </div>
-        <div className="flex flex-col gap-1">
-          <label className="text-sm font-medium text-neutral-700">
-            Maximum age
-          </label>
+        <div className="flex flex-col gap-1.5">
+          <label className={labelClass}>Maximum age</label>
           <input
             type="number"
             min={13}
             max={99}
             value={state.ageMax}
             onChange={(e) => update({ ageMax: Number(e.target.value) })}
-            className="border border-neutral-300 rounded-md px-3 py-2 text-sm"
+            className={inputClass}
           />
         </div>
       </div>
 
-      <div className="flex flex-col gap-1">
-        <label className="text-sm font-medium text-neutral-700">Gender</label>
-        <div className="flex gap-2">
+      <div className="flex flex-col gap-1.5">
+        <label className={labelClass}>Gender</label>
+        <div className="inline-flex flex-wrap gap-2">
           {GENDER_OPTIONS.map((opt) => (
             <button
               key={opt.value}
               type="button"
               onClick={() => update({ gender: opt.value })}
-              className={`px-3 py-1.5 rounded-md border text-sm ${
+              className={`px-3.5 py-1.5 rounded-full border text-sm transition ${
                 state.gender === opt.value
-                  ? "border-neutral-900 bg-neutral-900 text-white"
-                  : "border-neutral-300 text-neutral-600"
+                  ? "border-primary bg-primary text-primary-foreground"
+                  : "border-border text-muted-foreground hover:border-neutral-300"
               }`}
             >
               {opt.label}
@@ -82,24 +89,25 @@ export default function AudienceStep({
         </div>
       </div>
 
-      <div className="flex flex-col gap-1">
-        <label className="text-sm font-medium text-neutral-700">
-          Location
-        </label>
-        <input
-          type="text"
-          placeholder="City, region, or country"
-          value={state.location}
-          onChange={(e) => update({ location: e.target.value })}
-          className="border border-neutral-300 rounded-md px-3 py-2 text-sm"
-        />
+      <div className="flex flex-col gap-1.5">
+        <label className={labelClass}>Location</label>
+        <div className="relative">
+          <MapPin className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-neutral-400" />
+          <input
+            type="text"
+            placeholder="City, region, or country"
+            value={state.location}
+            onChange={(e) => update({ location: e.target.value })}
+            className={`${inputClass} pl-10`}
+          />
+        </div>
       </div>
 
-      <div className="flex justify-between">
+      <div className="flex justify-between pt-2">
         <button
           type="button"
           onClick={onBack}
-          className="text-sm text-neutral-600 hover:text-neutral-900"
+          className={buttonClasses("ghost", "md")}
         >
           Back
         </button>
@@ -107,7 +115,7 @@ export default function AudienceStep({
           type="button"
           disabled={!canContinue}
           onClick={onNext}
-          className="bg-neutral-900 text-white rounded-md px-5 py-2 text-sm font-medium disabled:opacity-40"
+          className={buttonClasses("primary", "md")}
         >
           Continue
         </button>

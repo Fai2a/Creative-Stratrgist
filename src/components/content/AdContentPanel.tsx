@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { Loader2, Music2, Search, Sparkles } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import {
   buildAudienceSummaryFromCampaign,
@@ -9,6 +10,7 @@ import {
 } from "@/lib/campaign";
 import type { ContentResponse } from "@/lib/schemas";
 import CopyableLine from "@/components/content/CopyableLine";
+import { buttonClasses, sectionEyebrowClass } from "@/lib/ui";
 
 export default function AdContentPanel({
   campaign,
@@ -92,10 +94,10 @@ export default function AdContentPanel({
 
   return (
     <div className="flex flex-col gap-6">
-      <div className="flex items-center justify-between">
+      <div className="flex items-center justify-between flex-wrap gap-3">
         <div>
-          <h2 className="text-xl font-semibold">Ad content</h2>
-          <p className="text-sm text-neutral-600 mt-1">
+          <h2 className="text-xl font-semibold tracking-tight">Ad content</h2>
+          <p className="text-sm text-muted-foreground mt-1">
             Platform-native copy, generated from this campaign&apos;s
             description and audience.
           </p>
@@ -104,8 +106,13 @@ export default function AdContentPanel({
           type="button"
           onClick={handleGenerate}
           disabled={loading}
-          className="bg-neutral-900 text-white rounded-md px-4 py-2 text-sm font-medium disabled:opacity-50 shrink-0"
+          className={buttonClasses("primary", "md", "shrink-0")}
         >
+          {loading ? (
+            <Loader2 className="h-4 w-4 animate-spin" />
+          ) : (
+            <Sparkles className="h-4 w-4" />
+          )}
           {loading
             ? "Generating..."
             : content
@@ -114,21 +121,28 @@ export default function AdContentPanel({
         </button>
       </div>
 
-      {error && <p className="text-sm text-red-600">{error}</p>}
+      {error && (
+        <p className="text-sm text-red-600 bg-red-50 border border-red-200 rounded-lg px-3 py-2">
+          {error}
+        </p>
+      )}
 
       {content && (
         <div className="grid gap-4 lg:grid-cols-3">
-          <div className="rounded-lg border border-neutral-200 p-4 flex flex-col gap-4">
-            <div>
-              <h3 className="font-medium">Meta</h3>
-              <p className="text-xs text-neutral-500">Facebook & Instagram</p>
+          <div className="rounded-xl bg-muted p-4 flex flex-col gap-4">
+            <div className="flex items-center gap-2">
+              <span className="h-8 w-8 rounded-lg bg-[#1877F2] text-white flex items-center justify-center shrink-0 font-bold text-sm">
+                f
+              </span>
+              <div>
+                <h3 className="font-medium leading-tight">Meta</h3>
+                <p className="text-xs text-muted-foreground">Facebook & Instagram</p>
+              </div>
             </div>
 
             <div>
-              <div className="text-xs uppercase tracking-wide text-neutral-500 mb-1">
-                Primary text
-              </div>
-              <div className="flex flex-col gap-1.5">
+              <div className={sectionEyebrowClass}>Primary text</div>
+              <div className="flex flex-col gap-1.5 mt-1.5">
                 {content.meta.primary_text.map((t, i) => (
                   <CopyableLine key={i} text={t} />
                 ))}
@@ -136,10 +150,8 @@ export default function AdContentPanel({
             </div>
 
             <div>
-              <div className="text-xs uppercase tracking-wide text-neutral-500 mb-1">
-                Headline
-              </div>
-              <div className="flex flex-col gap-1.5">
+              <div className={sectionEyebrowClass}>Headline</div>
+              <div className="flex flex-col gap-1.5 mt-1.5">
                 {content.meta.headline.map((t, i) => (
                   <CopyableLine key={i} text={t} />
                 ))}
@@ -147,33 +159,34 @@ export default function AdContentPanel({
             </div>
 
             <div>
-              <div className="text-xs uppercase tracking-wide text-neutral-500 mb-1">
-                Description
-              </div>
-              <div className="flex flex-col gap-1.5">
+              <div className={sectionEyebrowClass}>Description</div>
+              <div className="flex flex-col gap-1.5 mt-1.5">
                 {content.meta.description.map((t, i) => (
                   <CopyableLine key={i} text={t} />
                 ))}
               </div>
             </div>
 
-            <div className="text-sm">
-              <span className="text-neutral-500">CTA button: </span>
+            <div className="text-sm pt-1 border-t border-border">
+              <span className="text-muted-foreground">CTA button: </span>
               <span className="font-medium">{content.meta.cta}</span>
             </div>
           </div>
 
-          <div className="rounded-lg border border-neutral-200 p-4 flex flex-col gap-4">
-            <div>
-              <h3 className="font-medium">Google</h3>
-              <p className="text-xs text-neutral-500">Responsive Search Ads</p>
+          <div className="rounded-xl bg-muted p-4 flex flex-col gap-4">
+            <div className="flex items-center gap-2">
+              <span className="h-8 w-8 rounded-lg bg-gradient-to-br from-[#4285F4] via-[#34A853] to-[#FBBC05] text-white flex items-center justify-center shrink-0">
+                <Search className="h-4 w-4" />
+              </span>
+              <div>
+                <h3 className="font-medium leading-tight">Google</h3>
+                <p className="text-xs text-muted-foreground">Responsive Search Ads</p>
+              </div>
             </div>
 
             <div>
-              <div className="text-xs uppercase tracking-wide text-neutral-500 mb-1">
-                Headlines
-              </div>
-              <div className="flex flex-col gap-1.5">
+              <div className={sectionEyebrowClass}>Headlines</div>
+              <div className="flex flex-col gap-1.5 mt-1.5">
                 {content.google.headlines.map((t, i) => (
                   <CopyableLine key={i} text={t} />
                 ))}
@@ -181,10 +194,8 @@ export default function AdContentPanel({
             </div>
 
             <div>
-              <div className="text-xs uppercase tracking-wide text-neutral-500 mb-1">
-                Descriptions
-              </div>
-              <div className="flex flex-col gap-1.5">
+              <div className={sectionEyebrowClass}>Descriptions</div>
+              <div className="flex flex-col gap-1.5 mt-1.5">
                 {content.google.descriptions.map((t, i) => (
                   <CopyableLine key={i} text={t} />
                 ))}
@@ -192,25 +203,28 @@ export default function AdContentPanel({
             </div>
           </div>
 
-          <div className="rounded-lg border border-neutral-200 p-4 flex flex-col gap-4">
-            <div>
-              <h3 className="font-medium">TikTok</h3>
-              <p className="text-xs text-neutral-500">In-feed ads</p>
+          <div className="rounded-xl bg-muted p-4 flex flex-col gap-4">
+            <div className="flex items-center gap-2">
+              <span className="h-8 w-8 rounded-lg bg-neutral-900 text-white flex items-center justify-center shrink-0">
+                <Music2 className="h-4 w-4" />
+              </span>
+              <div>
+                <h3 className="font-medium leading-tight">TikTok</h3>
+                <p className="text-xs text-muted-foreground">In-feed ads</p>
+              </div>
             </div>
 
             <div>
-              <div className="text-xs uppercase tracking-wide text-neutral-500 mb-1">
-                Ad text
-              </div>
-              <div className="flex flex-col gap-1.5">
+              <div className={sectionEyebrowClass}>Ad text</div>
+              <div className="flex flex-col gap-1.5 mt-1.5">
                 {content.tiktok.ad_text.map((t, i) => (
                   <CopyableLine key={i} text={t} />
                 ))}
               </div>
             </div>
 
-            <div className="text-sm">
-              <span className="text-neutral-500">CTA button: </span>
+            <div className="text-sm pt-1 border-t border-border">
+              <span className="text-muted-foreground">CTA button: </span>
               <span className="font-medium">{content.tiktok.cta}</span>
             </div>
           </div>

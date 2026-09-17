@@ -7,6 +7,7 @@ import {
   type Campaign,
   type WizardState,
 } from "@/lib/campaign";
+import { cardClass } from "@/lib/ui";
 import Stepper from "@/components/wizard/Stepper";
 import ModeStep from "@/components/wizard/ModeStep";
 import ProductStep from "@/components/wizard/ProductStep";
@@ -99,57 +100,61 @@ export default function WizardClient() {
       <Stepper current={step} />
 
       {saveError && (
-        <p className="text-sm text-red-600 mb-4 text-center">{saveError}</p>
+        <p className="text-sm text-red-600 bg-red-50 border border-red-200 rounded-lg px-3 py-2 mb-4 text-center">
+          {saveError}
+        </p>
       )}
 
-      {step === 1 && (
-        <ModeStep
-          mode={state.mode}
-          onChange={(mode) => update({ mode })}
-          onNext={() => setStep(2)}
-        />
-      )}
+      <div className={`${cardClass} p-6 sm:p-8`}>
+        {step === 1 && (
+          <ModeStep
+            mode={state.mode}
+            onChange={(mode) => update({ mode })}
+            onNext={() => setStep(2)}
+          />
+        )}
 
-      {step === 2 && (
-        <ProductStep
-          state={state}
-          update={update}
-          onNext={() => setStep(3)}
-          onBack={() => setStep(1)}
-        />
-      )}
+        {step === 2 && (
+          <ProductStep
+            state={state}
+            update={update}
+            onNext={() => setStep(3)}
+            onBack={() => setStep(1)}
+          />
+        )}
 
-      {step === 3 && (
-        <AudienceStep
-          state={state}
-          update={update}
-          onNext={() => setStep(4)}
-          onBack={() => setStep(2)}
-        />
-      )}
+        {step === 3 && (
+          <AudienceStep
+            state={state}
+            update={update}
+            onNext={() => setStep(4)}
+            onBack={() => setStep(2)}
+          />
+        )}
 
-      {step === 4 && (
-        <DescriptionStep
-          state={state}
-          update={update}
-          onNext={() => setStep(5)}
-          onBack={() => setStep(3)}
-        />
-      )}
+        {step === 4 && (
+          <DescriptionStep
+            state={state}
+            update={update}
+            onNext={() => setStep(5)}
+            onBack={() => setStep(3)}
+          />
+        )}
 
-      {step === 5 && (
-        <BudgetStep
-          state={state}
-          update={update}
-          onApprove={handleApproveBudget}
-          onBack={() => setStep(4)}
-          approving={approving}
-        />
-      )}
+        {step === 5 && (
+          <BudgetStep
+            state={state}
+            update={update}
+            onApprove={handleApproveBudget}
+            onBack={() => setStep(4)}
+            approving={approving}
+          />
+        )}
 
-      {step === 6 && savedCampaign && (
-        <SummaryStep campaign={savedCampaign} onStartNew={handleStartNew} />
-      )}
+        {step === 6 && savedCampaign && (
+          <SummaryStep campaign={savedCampaign} onStartNew={handleStartNew} />
+        )}
+      </div>
     </div>
   );
 }

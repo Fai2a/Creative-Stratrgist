@@ -1,7 +1,14 @@
 "use client";
 
 import { useState } from "react";
+import {
+  CheckCircle2,
+  Loader2,
+  PiggyBank,
+  SlidersHorizontal,
+} from "lucide-react";
 import { estimateAudienceSize, type WizardState } from "@/lib/campaign";
+import { buttonClasses, cardClass, inputClass, labelClass } from "@/lib/ui";
 
 interface BudgetStepProps {
   state: WizardState;
@@ -81,8 +88,8 @@ export default function BudgetStep({
   return (
     <div className="flex flex-col gap-6">
       <div>
-        <h2 className="text-xl font-semibold">Set a budget</h2>
-        <p className="text-sm text-neutral-600 mt-1">
+        <h2 className="text-xl font-semibold tracking-tight">Set a budget</h2>
+        <p className="text-sm text-muted-foreground mt-1">
           Our AI proposes a realistic spend plan - always as a range, never a
           guarantee.
         </p>
@@ -91,14 +98,12 @@ export default function BudgetStep({
       {!result && (
         <>
           <div className="grid sm:grid-cols-3 gap-4">
-            <div className="flex flex-col gap-1">
-              <label className="text-sm font-medium text-neutral-700">
-                Goal
-              </label>
+            <div className="flex flex-col gap-1.5">
+              <label className={labelClass}>Goal</label>
               <select
                 value={state.goal}
                 onChange={(e) => update({ goal: e.target.value })}
-                className="border border-neutral-300 rounded-md px-3 py-2 text-sm"
+                className={inputClass}
               >
                 {GOAL_OPTIONS.map((g) => (
                   <option key={g.value} value={g.value}>
@@ -107,10 +112,8 @@ export default function BudgetStep({
                 ))}
               </select>
             </div>
-            <div className="flex flex-col gap-1">
-              <label className="text-sm font-medium text-neutral-700">
-                Campaign length (days)
-              </label>
+            <div className="flex flex-col gap-1.5">
+              <label className={labelClass}>Campaign length (days)</label>
               <input
                 type="number"
                 min={1}
@@ -118,20 +121,18 @@ export default function BudgetStep({
                 onChange={(e) =>
                   update({ campaignLengthDays: Number(e.target.value) })
                 }
-                className="border border-neutral-300 rounded-md px-3 py-2 text-sm"
+                className={inputClass}
               />
             </div>
-            <div className="flex flex-col gap-1">
-              <label className="text-sm font-medium text-neutral-700">
-                Budget cap (optional)
-              </label>
+            <div className="flex flex-col gap-1.5">
+              <label className={labelClass}>Budget cap (optional)</label>
               <input
                 type="number"
                 min={0}
                 placeholder="Leave blank for a recommendation"
                 value={state.userBudgetCap}
                 onChange={(e) => update({ userBudgetCap: e.target.value })}
-                className="border border-neutral-300 rounded-md px-3 py-2 text-sm"
+                className={inputClass}
               />
             </div>
           </div>
@@ -140,21 +141,33 @@ export default function BudgetStep({
             type="button"
             onClick={handleGetRecommendation}
             disabled={loading}
-            className="self-start bg-neutral-900 text-white rounded-md px-4 py-2 text-sm font-medium disabled:opacity-50"
+            className={buttonClasses("primary", "md", "self-start")}
           >
+            {loading ? (
+              <Loader2 className="h-4 w-4 animate-spin" />
+            ) : (
+              <SlidersHorizontal className="h-4 w-4" />
+            )}
             {loading ? "Building plan..." : "Get recommendation"}
           </button>
 
-          {error && <p className="text-sm text-red-600">{error}</p>}
+          {error && (
+            <p className="text-sm text-red-600 bg-red-50 border border-red-200 rounded-lg px-3 py-2">
+              {error}
+            </p>
+          )}
         </>
       )}
 
       {result && (
-        <div className="rounded-lg border border-neutral-200 p-5 flex flex-col gap-4">
+        <div className={`${cardClass} p-5 flex flex-col gap-4`}>
           <div className="flex items-center justify-between">
-            <h3 className="font-medium">Recommended plan</h3>
+            <h3 className="font-medium flex items-center gap-2">
+              <PiggyBank className="h-4 w-4 text-primary" />
+              Recommended plan
+            </h3>
             <span
-              className={`text-xs px-2 py-1 rounded-full ${
+              className={`text-xs font-medium px-2.5 py-1 rounded-full ${
                 result.mode_recommendation === "auto_manage_eligible"
                   ? "bg-emerald-100 text-emerald-700"
                   : "bg-amber-100 text-amber-700"
@@ -167,22 +180,22 @@ export default function BudgetStep({
           </div>
 
           {result.warning && (
-            <p className="text-sm bg-amber-50 border border-amber-200 text-amber-800 rounded-md px-3 py-2">
+            <p className="text-sm bg-amber-50 border border-amber-200 text-amber-800 rounded-lg px-3 py-2">
               {result.warning}
             </p>
           )}
 
           <div className="grid sm:grid-cols-2 gap-4">
-            <div>
-              <div className="text-xs text-neutral-500">Total budget</div>
-              <div className="font-medium">
+            <div className="rounded-xl bg-muted px-4 py-3">
+              <div className="text-xs text-muted-foreground">Total budget</div>
+              <div className="font-semibold text-lg">
                 {formatMoney(result.budget_range_total[0])} -{" "}
                 {formatMoney(result.budget_range_total[1])}
               </div>
             </div>
-            <div>
-              <div className="text-xs text-neutral-500">Daily spend</div>
-              <div className="font-medium">
+            <div className="rounded-xl bg-muted px-4 py-3">
+              <div className="text-xs text-muted-foreground">Daily spend</div>
+              <div className="font-semibold text-lg">
                 {formatMoney(result.daily_spend_range[0])} -{" "}
                 {formatMoney(result.daily_spend_range[1])}
               </div>
@@ -190,20 +203,22 @@ export default function BudgetStep({
           </div>
 
           <div>
-            <div className="text-xs text-neutral-500 mb-2">
+            <div className="text-xs text-muted-foreground mb-2">
               Platform split
             </div>
-            <div className="flex flex-col gap-2">
+            <div className="flex flex-col gap-2.5">
               {result.platform_split.map((p) => (
                 <div key={p.platform} className="flex items-center gap-3">
-                  <span className="text-sm w-24 shrink-0">{p.platform}</span>
-                  <div className="flex-1 h-2 rounded-full bg-neutral-100 overflow-hidden">
+                  <span className="text-sm w-28 shrink-0 truncate">
+                    {p.platform}
+                  </span>
+                  <div className="flex-1 h-2 rounded-full bg-muted overflow-hidden">
                     <div
-                      className="h-full bg-neutral-900"
+                      className="h-full rounded-full bg-gradient-to-r from-primary to-accent"
                       style={{ width: `${Math.min(100, p.pct)}%` }}
                     />
                   </div>
-                  <span className="text-sm text-neutral-600 w-10 text-right">
+                  <span className="text-sm text-muted-foreground w-10 text-right">
                     {p.pct}%
                   </span>
                 </div>
@@ -211,13 +226,15 @@ export default function BudgetStep({
             </div>
           </div>
 
-          <p className="text-sm text-neutral-600">{result.reasoning}</p>
+          <p className="text-sm text-muted-foreground leading-relaxed">
+            {result.reasoning}
+          </p>
 
           <div className="flex gap-3 pt-2">
             <button
               type="button"
               onClick={() => update({ budgetResult: null })}
-              className="border border-neutral-300 rounded-md px-4 py-2 text-sm font-medium hover:bg-neutral-50"
+              className={buttonClasses("outline", "md")}
             >
               Edit
             </button>
@@ -225,19 +242,24 @@ export default function BudgetStep({
               type="button"
               onClick={onApprove}
               disabled={approving}
-              className="bg-neutral-900 text-white rounded-md px-4 py-2 text-sm font-medium disabled:opacity-50"
+              className={buttonClasses("primary", "md")}
             >
+              {approving ? (
+                <Loader2 className="h-4 w-4 animate-spin" />
+              ) : (
+                <CheckCircle2 className="h-4 w-4" />
+              )}
               {approving ? "Saving..." : "Approve"}
             </button>
           </div>
         </div>
       )}
 
-      <div className="flex justify-between">
+      <div className="flex justify-between pt-2">
         <button
           type="button"
           onClick={onBack}
-          className="text-sm text-neutral-600 hover:text-neutral-900"
+          className={buttonClasses("ghost", "md")}
         >
           Back
         </button>
