@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { Sparkles } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
+import { isPro, type Subscription } from "@/lib/subscription";
 import SignOutButton from "@/components/SignOutButton";
 import { buttonClasses } from "@/lib/ui";
 
@@ -9,6 +10,16 @@ export default async function Navbar() {
   const {
     data: { user },
   } = await supabase.auth.getUser();
+
+  let pro = false;
+  if (user) {
+    const { data: subscription } = await supabase
+      .from("subscriptions")
+      .select("*")
+      .eq("user_id", user.id)
+      .maybeSingle<Subscription>();
+    pro = isPro(subscription ?? null);
+  }
 
   return (
     <header className="sticky top-0 z-40 border-b border-border/80 bg-background/80 backdrop-blur-md">
@@ -37,6 +48,22 @@ export default async function Navbar() {
               >
                 My Campaigns
               </Link>
+              {pro ? (
+                <Link
+                  href="/account"
+                  className="inline-flex items-center gap-1 text-xs font-medium px-2.5 py-1 rounded-full bg-primary/10 text-primary hover:bg-primary/15 transition"
+                >
+                  <Sparkles className="h-3 w-3" />
+                  Pro
+                </Link>
+              ) : (
+                <Link
+                  href="/pricing"
+                  className="text-sm text-muted-foreground hover:text-foreground px-3 py-2 rounded-lg hover:bg-muted transition"
+                >
+                  Upgrade
+                </Link>
+              )}
               <Link href="/wizard" className={buttonClasses("primary", "sm", "ml-1")}>
                 New Campaign
               </Link>
@@ -44,6 +71,12 @@ export default async function Navbar() {
             </>
           ) : (
             <>
+              <Link
+                href="/pricing"
+                className="text-sm text-muted-foreground hover:text-foreground px-3 py-2 rounded-lg hover:bg-muted transition"
+              >
+                Pricing
+              </Link>
               <Link
                 href="/login"
                 className="text-sm text-muted-foreground hover:text-foreground px-3 py-2 rounded-lg hover:bg-muted transition"

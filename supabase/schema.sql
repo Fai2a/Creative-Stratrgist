@@ -168,3 +168,32 @@ create policy "Users can update their own competitor analyses"
 create policy "Users can delete their own competitor analyses"
   on public.competitor_analyses for delete
   using (auth.uid() = user_id);
+
+-- ---------------------------------------------------------------------------
+-- Monetization: Stripe subscriptions
+-- If your project already ran the blocks above, you only need to run this
+-- section - it's safe to paste into the SQL editor on its own.
+-- ---------------------------------------------------------------------------
+
+create table if not exists public.subscriptions (
+  id uuid primary key default gen_random_uuid(),
+  user_id uuid not null unique references auth.users(id) on delete cascade,
+
+  stripe_customer_id text unique,
+  stripe_subscription_id text unique,
+  status text not null default 'free' check (status in ('free', 'active', 'canceled', 'past_due')),
+  current_period_end timestamptz,
+
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now()
+);
+
+alter table public.subscriptions enable row level security;
+
+-- Users may only read their own subscription row. There are deliberately
+-- no insert/update/delete policies for the authenticated role - only the
+-- Stripe webhook (using the service role key, which bypasses RLS) writes
+-- to this table, so a user can never grant themselves Pro access directly.
+create policy "Users can view their own subscription"
+  on public.subscriptions for select
+  using (auth.uid() = user_id);
