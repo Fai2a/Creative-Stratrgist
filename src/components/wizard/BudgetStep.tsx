@@ -7,8 +7,18 @@ import {
   PiggyBank,
   SlidersHorizontal,
 } from "lucide-react";
-import { estimateAudienceSize, type WizardState } from "@/lib/campaign";
-import { buttonClasses, cardClass, inputClass, labelClass } from "@/lib/ui";
+import {
+  estimateAudienceSize,
+  GOAL_OPTIONS,
+  type WizardState,
+} from "@/lib/campaign";
+import {
+  buttonClasses,
+  cardClass,
+  friendlyGenerationError,
+  inputClass,
+  labelClass,
+} from "@/lib/ui";
 
 interface BudgetStepProps {
   state: WizardState;
@@ -17,13 +27,6 @@ interface BudgetStepProps {
   onBack: () => void;
   approving: boolean;
 }
-
-const GOAL_OPTIONS = [
-  { value: "awareness", label: "Awareness" },
-  { value: "traffic", label: "Traffic" },
-  { value: "leads", label: "Leads" },
-  { value: "sales", label: "Sales" },
-];
 
 function formatMoney(n: number) {
   return n.toLocaleString("en-US", {
@@ -68,9 +71,10 @@ export default function BudgetStep({
 
       if (!res.ok) {
         setError(
-          data.error === "rate_limited"
-            ? data.message
-            : "Something went wrong building a budget plan. Please try again.",
+          friendlyGenerationError(
+            data,
+            "Something went wrong building a budget plan. Please try again.",
+          ),
         );
         return;
       }

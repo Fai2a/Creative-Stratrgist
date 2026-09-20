@@ -10,7 +10,7 @@ import {
 } from "@/lib/campaign";
 import type { ContentResponse } from "@/lib/schemas";
 import CopyableLine from "@/components/content/CopyableLine";
-import { buttonClasses, sectionEyebrowClass } from "@/lib/ui";
+import { buttonClasses, friendlyGenerationError, sectionEyebrowClass } from "@/lib/ui";
 
 export default function AdContentPanel({
   campaign,
@@ -53,9 +53,10 @@ export default function AdContentPanel({
 
       if (!res.ok) {
         setError(
-          data.error === "rate_limited" && data.message
-            ? data.message
-            : "Something went wrong generating ad content. Please try again.",
+          friendlyGenerationError(
+            data,
+            "Something went wrong generating ad content. Please try again.",
+          ),
         );
         return;
       }

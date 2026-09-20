@@ -3,7 +3,7 @@ import { ArrowLeft } from "lucide-react";
 import { notFound } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import type { AdContent, Campaign, CompetitorAnalysis } from "@/lib/campaign";
-import CampaignBriefCard from "@/components/CampaignBriefCard";
+import CampaignDetailClient from "@/components/campaign/CampaignDetailClient";
 import AdContentPanel from "@/components/content/AdContentPanel";
 import CompetitorAnalysisPanel from "@/components/competitor/CompetitorAnalysisPanel";
 import { cardClass } from "@/lib/ui";
@@ -49,7 +49,7 @@ export default async function CampaignDetailPage({
           Back to My Campaigns
         </Link>
 
-        <CampaignBriefCard campaign={campaign} />
+        <CampaignDetailClient campaign={campaign} />
 
         <div className={`${cardClass} p-6 sm:p-8`}>
           <CompetitorAnalysisPanel

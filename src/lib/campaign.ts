@@ -8,6 +8,19 @@ import type {
 export type CampaignMode = "brand" | "general";
 export type Gender = "all" | "male" | "female";
 
+export const GENDER_OPTIONS: { value: Gender; label: string }[] = [
+  { value: "all", label: "All genders" },
+  { value: "female", label: "Female" },
+  { value: "male", label: "Male" },
+];
+
+export const GOAL_OPTIONS = [
+  { value: "awareness", label: "Awareness" },
+  { value: "traffic", label: "Traffic" },
+  { value: "leads", label: "Leads" },
+  { value: "sales", label: "Sales" },
+];
+
 /** Shape of a row in the `campaigns` table. */
 export interface Campaign {
   id: string;

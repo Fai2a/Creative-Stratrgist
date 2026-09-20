@@ -9,7 +9,12 @@ import {
   type CompetitorAnalysis,
 } from "@/lib/campaign";
 import type { CompetitorAnalysisResponse, CompetitorInput } from "@/lib/schemas";
-import { buttonClasses, inputClass, sectionEyebrowClass } from "@/lib/ui";
+import {
+  buttonClasses,
+  friendlyGenerationError,
+  inputClass,
+  sectionEyebrowClass,
+} from "@/lib/ui";
 
 const MAX_COMPETITORS = 5;
 const EMPTY_ROW: CompetitorInput = { name: "", notes: "" };
@@ -89,9 +94,10 @@ export default function CompetitorAnalysisPanel({
 
       if (!res.ok) {
         setError(
-          data.error === "rate_limited" && data.message
-            ? data.message
-            : "Something went wrong analyzing competitors. Please try again.",
+          friendlyGenerationError(
+            data,
+            "Something went wrong analyzing competitors. Please try again.",
+          ),
         );
         return;
       }

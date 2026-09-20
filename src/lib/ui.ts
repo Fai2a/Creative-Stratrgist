@@ -44,3 +44,21 @@ export const labelClass = "text-sm font-medium text-neutral-700";
 
 export const sectionEyebrowClass =
   "text-xs font-semibold uppercase tracking-wider text-primary";
+
+/**
+ * Gemini routes return a distinct error code + friendly message for known,
+ * retryable failure modes (rate limits, Google-side outages) - use that
+ * message when present, otherwise fall back to a generic one.
+ */
+export function friendlyGenerationError(
+  data: { error?: string; message?: string } | undefined,
+  fallback: string,
+): string {
+  if (
+    (data?.error === "rate_limited" || data?.error === "service_unavailable") &&
+    data.message
+  ) {
+    return data.message;
+  }
+  return fallback;
+}

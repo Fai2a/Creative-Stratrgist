@@ -1,5 +1,5 @@
 import { MapPin, ShieldCheck } from "lucide-react";
-import type { Gender, WizardState } from "@/lib/campaign";
+import { GENDER_OPTIONS, type WizardState } from "@/lib/campaign";
 import { buttonClasses, inputClass, labelClass } from "@/lib/ui";
 
 interface AudienceStepProps {
@@ -8,12 +8,6 @@ interface AudienceStepProps {
   onNext: () => void;
   onBack: () => void;
 }
-
-const GENDER_OPTIONS: { value: Gender; label: string }[] = [
-  { value: "all", label: "All genders" },
-  { value: "female", label: "Female" },
-  { value: "male", label: "Male" },
-];
 
 export default function AudienceStep({
   state,

@@ -14,29 +14,73 @@ export class GeminiRateLimitError extends Error {
   }
 }
 
+/** Thrown when Gemini itself is down/overloaded (HTTP 503). */
+export class GeminiUnavailableError extends Error {
+  constructor() {
+    super("Gemini is temporarily unavailable");
+    this.name = "GeminiUnavailableError";
+  }
+}
+
+// Bound how long we wait before giving up - without this, an outage on
+// Google's end can hang the request far longer than a user will wait.
+const REQUEST_TIMEOUT_MS = 25_000;
+
 /**
- * Runs one interaction and returns its parsed JSON output (or null if the
- * call produced no text or unparseable text). A 429 is converted to
- * GeminiRateLimitError and re-thrown immediately - retrying it would just
- * burn another request against the same exhausted per-minute quota.
+ * The classic Schema type (used by `responseSchema` below) doesn't support
+ * `prefixItems` (zod's JSON Schema output for z.tuple(...)) - it 400s with
+ * "Unknown name \"prefixItems\"". Our tuples are always homogeneous (e.g.
+ * [number, number]), so collapsing prefixItems into a plain `items` schema
+ * loses no information we actually rely on; our own zod validation of the
+ * response still enforces the exact shape.
  */
-async function createAndParse(
+function stripPrefixItems(node: unknown): unknown {
+  if (Array.isArray(node)) return node.map(stripPrefixItems);
+  if (node && typeof node === "object") {
+    const obj: Record<string, unknown> = { ...(node as Record<string, unknown>) };
+    if (Array.isArray(obj.prefixItems)) {
+      obj.items = stripPrefixItems(obj.prefixItems[0]);
+      delete obj.prefixItems;
+    }
+    for (const key of Object.keys(obj)) {
+      obj[key] = stripPrefixItems(obj[key]);
+    }
+    return obj;
+  }
+  return node;
+}
+
+/**
+ * Runs one generateContent call and returns its parsed JSON output (or null
+ * if the call produced no text or unparseable text). A 429 is converted to
+ * GeminiRateLimitError and a 503 to GeminiUnavailableError, both re-thrown
+ * immediately - retrying either would just repeat the same failure.
+ *
+ * Uses the classic `models.generateContent` method rather than the newer
+ * Interactions API (`interactions.create`): when this was built, the
+ * Interactions API was hanging/timing out outright (even for plain
+ * unstructured calls) while generateContent responded normally - revisit if
+ * that stabilizes.
+ */
+async function generateAndParse(
   systemPrompt: string,
   input: string,
   schema?: Record<string, unknown>,
 ): Promise<unknown> {
   try {
-    const interaction = await genAI.interactions.create({
+    const response = await genAI.models.generateContent({
       model: GEMINI_MODEL,
-      system_instruction: systemPrompt,
-      input,
-      response_format: schema
-        ? { type: "text", mime_type: "application/json", schema }
-        : { type: "text", mime_type: "application/json" },
+      contents: input,
+      config: {
+        systemInstruction: systemPrompt,
+        responseMimeType: "application/json",
+        ...(schema ? { responseSchema: stripPrefixItems(schema) } : {}),
+        httpOptions: { timeout: REQUEST_TIMEOUT_MS },
+      },
     });
-    if (!interaction.output_text) return null;
+    if (!response.text) return null;
     try {
-      return JSON.parse(interaction.output_text);
+      return JSON.parse(response.text);
     } catch {
       return null;
     }
@@ -44,12 +88,15 @@ async function createAndParse(
     if (err instanceof ApiError && err.status === 429) {
       throw new GeminiRateLimitError();
     }
+    if (err instanceof ApiError && err.status === 503) {
+      throw new GeminiUnavailableError();
+    }
     return null;
   }
 }
 
 /**
- * Calls Gemini with a schema-constrained structured output (response_format)
+ * Calls Gemini with a schema-constrained structured output (responseSchema)
  * derived from the given zod schema, then validates the result with that same
  * schema. Structured outputs already guarantee schema-conformant JSON, but if
  * parsing/validation still fails for any reason, retries once with an
@@ -67,13 +114,13 @@ export async function callGeminiStructured<Schema extends z.ZodTypeAny>(
     unknown
   >;
 
-  const firstAttempt = await createAndParse(systemPrompt, userContent, jsonSchema);
+  const firstAttempt = await generateAndParse(systemPrompt, userContent, jsonSchema);
   const firstResult = schema.safeParse(firstAttempt);
   if (firstResult.success) {
     return firstResult.data;
   }
 
-  const secondAttempt = await createAndParse(
+  const secondAttempt = await generateAndParse(
     systemPrompt,
     `${userContent}\n\n${RETRY_INSTRUCTION}`,
   );
@@ -101,6 +148,16 @@ export function geminiErrorResponse(routeLabel: string, err: unknown) {
           "You're generating content faster than the free Gemini tier allows. Wait about a minute and try again.",
       },
       { status: 429 },
+    );
+  }
+  if (err instanceof GeminiUnavailableError) {
+    return NextResponse.json(
+      {
+        error: "service_unavailable",
+        message:
+          "Gemini is temporarily overloaded on Google's end. Please try again in a minute.",
+      },
+      { status: 503 },
     );
   }
   return NextResponse.json({ error: "generation_failed" }, { status: 502 });

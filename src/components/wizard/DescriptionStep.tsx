@@ -4,7 +4,7 @@ import { useState } from "react";
 import { Check, Loader2, Sparkles } from "lucide-react";
 import { buildAudienceSummary, type WizardState } from "@/lib/campaign";
 import type { DescriptionMode, DescriptionResponse } from "@/lib/schemas";
-import { buttonClasses, labelClass } from "@/lib/ui";
+import { buttonClasses, friendlyGenerationError, labelClass } from "@/lib/ui";
 
 interface DescriptionStepProps {
   state: WizardState;
@@ -51,9 +51,10 @@ export default function DescriptionStep({
 
       if (!res.ok) {
         setError(
-          data.error === "rate_limited"
-            ? data.message
-            : "Something went wrong generating descriptions. Please try again.",
+          friendlyGenerationError(
+            data,
+            "Something went wrong generating descriptions. Please try again.",
+          ),
         );
         return;
       }
