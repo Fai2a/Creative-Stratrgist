@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import { initializePaddle } from "@paddle/paddle-js";
 import { Check, Loader2, Sparkles } from "lucide-react";
 import { FREE_CAMPAIGN_LIMIT } from "@/lib/subscription";
 import { buttonClasses, cardClass } from "@/lib/ui";
@@ -22,27 +23,52 @@ const PRO_FEATURES = [
 export default function PricingCards({
   isLoggedIn,
   isPro,
+  userId,
+  userEmail,
 }: {
   isLoggedIn: boolean;
   isPro: boolean;
+  userId: string | null;
+  userEmail: string | null;
 }) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   async function handleUpgrade() {
+    const token = process.env.NEXT_PUBLIC_PADDLE_CLIENT_TOKEN;
+    const priceId = process.env.NEXT_PUBLIC_PADDLE_PRICE_ID;
+    if (!token || !priceId) {
+      setError("Billing isn't configured yet. Please try again later.");
+      return;
+    }
+
     setLoading(true);
     setError(null);
     try {
-      const res = await fetch("/api/stripe/checkout", { method: "POST" });
-      const data = await res.json();
-      if (!res.ok || !data.url) {
+      const paddle = await initializePaddle({
+        token,
+        environment:
+          process.env.NEXT_PUBLIC_PADDLE_ENVIRONMENT === "production"
+            ? "production"
+            : "sandbox",
+      });
+
+      if (!paddle) {
         setError("Something went wrong starting checkout. Please try again.");
-        setLoading(false);
         return;
       }
-      window.location.href = data.url;
+
+      paddle.Checkout.open({
+        items: [{ priceId, quantity: 1 }],
+        customer: userEmail ? { email: userEmail } : undefined,
+        customData: userId ? { user_id: userId } : undefined,
+        settings: {
+          successUrl: `${window.location.origin}/account?checkout=success`,
+        },
+      });
     } catch {
-      setError("Network error - please try again.");
+      setError("Something went wrong starting checkout. Please try again.");
+    } finally {
       setLoading(false);
     }
   }
@@ -99,7 +125,7 @@ export default function PricingCards({
               className={buttonClasses("primary", "md")}
             >
               {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : null}
-              {loading ? "Redirecting..." : "Upgrade to Pro"}
+              {loading ? "Opening checkout..." : "Upgrade to Pro"}
             </button>
           ) : (
             <Link href="/signup?redirectTo=/pricing" className={buttonClasses("primary", "md")}>

@@ -26,7 +26,7 @@ export default function AccountBilling({
   const [portalLoading, setPortalLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  // Stripe's webhook lands asynchronously - right after a successful
+  // Paddle's webhook lands asynchronously - right after a successful
   // checkout the page can still show "free" for a moment. Poll once via a
   // refresh so it catches up without the user manually reloading.
   useEffect(() => {
@@ -40,7 +40,7 @@ export default function AccountBilling({
     setPortalLoading(true);
     setError(null);
     try {
-      const res = await fetch("/api/stripe/portal", { method: "POST" });
+      const res = await fetch("/api/paddle/portal", { method: "POST" });
       const data = await res.json();
       if (!res.ok || !data.url) {
         setError("Something went wrong opening the billing portal. Please try again.");

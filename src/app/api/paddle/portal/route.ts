@@ -1,9 +1,9 @@
-import { NextRequest, NextResponse } from "next/server";
-import { getStripe } from "@/lib/stripe";
+import { NextResponse } from "next/server";
+import { getPaddle } from "@/lib/paddle";
 import { createClient } from "@/lib/supabase/server";
 import type { Subscription } from "@/lib/subscription";
 
-export async function POST(req: NextRequest) {
+export async function POST() {
   const supabase = await createClient();
   const {
     data: { user },
@@ -18,20 +18,19 @@ export async function POST(req: NextRequest) {
     .eq("user_id", user.id)
     .maybeSingle<Subscription>();
 
-  if (!subscription?.stripe_customer_id) {
+  if (!subscription?.paddle_customer_id || !subscription.paddle_subscription_id) {
     return NextResponse.json({ error: "no_subscription" }, { status: 400 });
   }
 
   try {
-    const stripe = getStripe();
-    const origin = req.nextUrl.origin;
-    const session = await stripe.billingPortal.sessions.create({
-      customer: subscription.stripe_customer_id,
-      return_url: `${origin}/account`,
-    });
-    return NextResponse.json({ url: session.url });
+    const paddle = getPaddle();
+    const session = await paddle.customerPortalSessions.create(
+      subscription.paddle_customer_id,
+      [subscription.paddle_subscription_id],
+    );
+    return NextResponse.json({ url: session.urls.general.overview });
   } catch (err) {
-    console.error("[/api/stripe/portal]", err);
+    console.error("[/api/paddle/portal]", err);
     return NextResponse.json({ error: "portal_failed" }, { status: 502 });
   }
 }

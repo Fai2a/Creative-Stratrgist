@@ -170,17 +170,23 @@ create policy "Users can delete their own competitor analyses"
   using (auth.uid() = user_id);
 
 -- ---------------------------------------------------------------------------
--- Monetization: Stripe subscriptions
+-- Monetization: Paddle subscriptions
 -- If your project already ran the blocks above, you only need to run this
 -- section - it's safe to paste into the SQL editor on its own.
+--
+-- Migrating from an earlier Stripe-based version of this table? Run this
+-- instead of the create table below (skip straight to the RLS policies,
+-- which are unaffected):
+--   alter table public.subscriptions rename column stripe_customer_id to paddle_customer_id;
+--   alter table public.subscriptions rename column stripe_subscription_id to paddle_subscription_id;
 -- ---------------------------------------------------------------------------
 
 create table if not exists public.subscriptions (
   id uuid primary key default gen_random_uuid(),
   user_id uuid not null unique references auth.users(id) on delete cascade,
 
-  stripe_customer_id text unique,
-  stripe_subscription_id text unique,
+  paddle_customer_id text unique,
+  paddle_subscription_id text unique,
   status text not null default 'free' check (status in ('free', 'active', 'canceled', 'past_due')),
   current_period_end timestamptz,
 
@@ -192,7 +198,7 @@ alter table public.subscriptions enable row level security;
 
 -- Users may only read their own subscription row. There are deliberately
 -- no insert/update/delete policies for the authenticated role - only the
--- Stripe webhook (using the service role key, which bypasses RLS) writes
+-- Paddle webhook (using the service role key, which bypasses RLS) writes
 -- to this table, so a user can never grant themselves Pro access directly.
 create policy "Users can view their own subscription"
   on public.subscriptions for select

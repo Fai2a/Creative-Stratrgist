@@ -23,7 +23,12 @@ export default async function PricingPage() {
         </p>
       </div>
 
-      <PricingCards isLoggedIn={!!user} isPro={plan?.pro ?? false} />
+      <PricingCards
+        isLoggedIn={!!user}
+        isPro={plan?.pro ?? false}
+        userId={user?.id ?? null}
+        userEmail={user?.email ?? null}
+      />
     </main>
   );
 }

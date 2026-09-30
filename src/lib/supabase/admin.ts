@@ -2,7 +2,7 @@ import { createClient as createSupabaseClient } from "@supabase/supabase-js";
 
 /**
  * Service-role client that bypasses Row Level Security. Only for trusted
- * server-side contexts with no user session to act as - e.g. the Stripe
+ * server-side contexts with no user session to act as - e.g. the Paddle
  * webhook, which needs to write subscription status on the user's behalf
  * without them being logged in on that request.
  */
