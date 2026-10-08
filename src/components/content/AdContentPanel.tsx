@@ -9,6 +9,7 @@ import {
   type Campaign,
 } from "@/lib/campaign";
 import type { ContentResponse } from "@/lib/schemas";
+import { platformsFromSplit } from "@/lib/platforms";
 import CopyableLine from "@/components/content/CopyableLine";
 import { buttonClasses, friendlyGenerationError, sectionEyebrowClass } from "@/lib/ui";
 
@@ -30,6 +31,7 @@ export default function AdContentPanel({
   );
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const shown = platformsFromSplit(campaign.platform_split);
 
   async function handleGenerate() {
     setLoading(true);
@@ -129,7 +131,16 @@ export default function AdContentPanel({
       )}
 
       {content && (
-        <div className="grid gap-4 lg:grid-cols-3">
+        <div
+          className={`grid gap-4 ${
+            shown.length === 1
+              ? "max-w-md"
+              : shown.length === 2
+                ? "lg:grid-cols-2"
+                : "lg:grid-cols-3"
+          }`}
+        >
+          {shown.includes("meta") && (
           <div className="rounded-xl bg-muted p-4 flex flex-col gap-4">
             <div className="flex items-center gap-2">
               <span className="h-8 w-8 rounded-lg bg-[#1877F2] text-white flex items-center justify-center shrink-0 font-bold text-sm">
@@ -173,7 +184,9 @@ export default function AdContentPanel({
               <span className="font-medium">{content.meta.cta}</span>
             </div>
           </div>
+          )}
 
+          {shown.includes("google") && (
           <div className="rounded-xl bg-muted p-4 flex flex-col gap-4">
             <div className="flex items-center gap-2">
               <span className="h-8 w-8 rounded-lg bg-gradient-to-br from-[#4285F4] via-[#34A853] to-[#FBBC05] text-white flex items-center justify-center shrink-0">
@@ -203,7 +216,9 @@ export default function AdContentPanel({
               </div>
             </div>
           </div>
+          )}
 
+          {shown.includes("tiktok") && (
           <div className="rounded-xl bg-muted p-4 flex flex-col gap-4">
             <div className="flex items-center gap-2">
               <span className="h-8 w-8 rounded-lg bg-neutral-900 text-white flex items-center justify-center shrink-0">
@@ -229,6 +244,7 @@ export default function AdContentPanel({
               <span className="font-medium">{content.tiktok.cta}</span>
             </div>
           </div>
+          )}
         </div>
       )}
     </div>

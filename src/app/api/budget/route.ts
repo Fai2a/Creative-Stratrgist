@@ -12,6 +12,7 @@ Rules:
 - Never state a guaranteed outcome. You may state an expected range at most.
 - mode_recommendation is "auto_manage_eligible" only if the plan's logic resembles standard platform auto-optimization — otherwise "suggest_only".
 - If user_budget_cap is unrealistically low for the stated goal and audience size, set "warning" to a short honest note.
+- "platforms" lists the ad platforms the user chose (ids: "tiktok", "meta", "google"). platform_split must contain exactly those platforms and no others, named "TikTok", "Meta", and "Google", with pct values summing to 100. If only one platform is chosen, it gets 100.
 
 Return ONLY this JSON, no other text:
 {

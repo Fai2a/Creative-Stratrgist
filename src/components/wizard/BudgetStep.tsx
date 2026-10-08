@@ -2,11 +2,14 @@
 
 import { useState } from "react";
 import {
+  Check,
   CheckCircle2,
   Loader2,
   PiggyBank,
   SlidersHorizontal,
 } from "lucide-react";
+import PlatformIcon from "@/components/PlatformIcon";
+import { PLATFORMS, type PlatformId } from "@/lib/platforms";
 import {
   estimateAudienceSize,
   GOAL_OPTIONS,
@@ -46,6 +49,16 @@ export default function BudgetStep({
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  function togglePlatform(id: PlatformId) {
+    const selected = state.platforms.includes(id);
+    if (selected && state.platforms.length === 1) return;
+    update({
+      platforms: selected
+        ? state.platforms.filter((p) => p !== id)
+        : [...state.platforms, id],
+    });
+  }
+
   async function handleGetRecommendation() {
     setLoading(true);
     setError(null);
@@ -64,6 +77,7 @@ export default function BudgetStep({
           campaign_length_days: state.campaignLengthDays,
           audience_size_estimate: estimateAudienceSize(state),
           user_budget_cap: cap,
+          platforms: state.platforms,
         }),
       });
 
@@ -101,6 +115,46 @@ export default function BudgetStep({
 
       {!result && (
         <>
+          <div className="flex flex-col gap-2">
+            <label className={labelClass}>Ad platforms</label>
+            <div className="grid sm:grid-cols-3 gap-3">
+              {PLATFORMS.map((p) => {
+                const selected = state.platforms.includes(p.id);
+                return (
+                  <button
+                    key={p.id}
+                    type="button"
+                    onClick={() => togglePlatform(p.id)}
+                    aria-pressed={selected}
+                    className={`relative flex items-center gap-3 text-left rounded-xl border p-3.5 transition-all duration-150 ${
+                      selected
+                        ? "border-primary ring-2 ring-primary/20 bg-primary/5"
+                        : "border-border hover:border-neutral-300 hover:shadow-sm"
+                    }`}
+                  >
+                    <PlatformIcon id={p.id} />
+                    <span className="min-w-0">
+                      <span className="block font-medium text-sm leading-tight">
+                        {p.name}
+                      </span>
+                      <span className="block text-xs text-muted-foreground truncate">
+                        {p.tagline}
+                      </span>
+                    </span>
+                    {selected && (
+                      <span className="absolute top-2.5 right-2.5 h-4 w-4 rounded-full bg-primary text-primary-foreground flex items-center justify-center">
+                        <Check className="h-2.5 w-2.5" strokeWidth={3} />
+                      </span>
+                    )}
+                  </button>
+                );
+              })}
+            </div>
+            <p className="text-xs text-muted-foreground">
+              Pick one or more. Your budget split and ad copy focus on these.
+            </p>
+          </div>
+
           <div className="grid sm:grid-cols-3 gap-4">
             <div className="flex flex-col gap-1.5">
               <label className={labelClass}>Goal</label>

@@ -1,6 +1,7 @@
 import Link from "next/link";
 import {
   ArrowRight,
+  Check,
   LayoutGrid,
   PenLine,
   Sparkles,
@@ -8,6 +9,46 @@ import {
   Wallet,
 } from "lucide-react";
 import { buttonClasses, cardClass, sectionEyebrowClass } from "@/lib/ui";
+import PlatformIcon from "@/components/PlatformIcon";
+import type { PlatformId } from "@/lib/platforms";
+
+const PLATFORM_CARDS: {
+  id: PlatformId;
+  name: string;
+  tagline: string;
+  points: string[];
+  featured?: boolean;
+}[] = [
+  {
+    id: "tiktok",
+    name: "TikTok",
+    tagline: "In-feed video ads",
+    featured: true,
+    points: [
+      "Short, scroll-stopping ad text within TikTok's 100-character limit",
+      "Budget split and daily spend tuned for TikTok",
+      "Audience targeting built around TikTok's allowed categories",
+    ],
+  },
+  {
+    id: "meta",
+    name: "Meta",
+    tagline: "Facebook & Instagram",
+    points: [
+      "Primary text, headlines, and descriptions within Meta's limits",
+      "Budget split alongside your other platforms",
+    ],
+  },
+  {
+    id: "google",
+    name: "Google",
+    tagline: "Responsive Search Ads",
+    points: [
+      "Up to 10 headlines and 4 descriptions within Google's limits",
+      "Budget split alongside your other platforms",
+    ],
+  },
+];
 
 const FEATURES = [
   {
@@ -71,6 +112,66 @@ export default function Home() {
               Create an account
             </Link>
           </div>
+        </div>
+      </section>
+
+      <section className="max-w-6xl mx-auto px-4 pb-20 sm:pb-28">
+        <div className="text-center mb-12">
+          <p className={sectionEyebrowClass}>Platforms</p>
+          <h2 className="text-2xl sm:text-3xl font-semibold tracking-tight mt-2">
+            Plan for the platforms you advertise on
+          </h2>
+          <p className="text-muted-foreground mt-3 max-w-xl mx-auto text-balance">
+            Choose your platforms in the campaign wizard. Direct account
+            connection is coming soon.
+          </p>
+        </div>
+
+        <div className="grid sm:grid-cols-2 gap-4">
+          {PLATFORM_CARDS.map((p) => (
+            <div
+              key={p.id}
+              className={`${cardClass} p-6 flex flex-col gap-4 ${
+                p.featured
+                  ? "sm:col-span-2 ring-2 ring-primary/20 border-primary/40"
+                  : ""
+              }`}
+            >
+              <div className="flex items-center justify-between gap-3">
+                <div className="flex items-center gap-3">
+                  <PlatformIcon id={p.id} size="lg" />
+                  <div>
+                    <h3 className="font-semibold text-lg leading-tight">
+                      {p.name}
+                    </h3>
+                    <p className="text-sm text-muted-foreground">{p.tagline}</p>
+                  </div>
+                </div>
+                {p.featured && (
+                  <span className="text-xs font-medium px-2.5 py-1 rounded-full bg-primary/10 text-primary shrink-0">
+                    Start here
+                  </span>
+                )}
+              </div>
+              <ul className="flex flex-col gap-2 text-sm text-muted-foreground">
+                {p.points.map((point) => (
+                  <li key={point} className="flex gap-2">
+                    <Check className="h-4 w-4 text-primary shrink-0 mt-0.5" />
+                    {point}
+                  </li>
+                ))}
+              </ul>
+              {p.featured && (
+                <Link
+                  href="/wizard"
+                  className={buttonClasses("primary", "md", "self-start mt-auto")}
+                >
+                  Plan a TikTok campaign
+                  <ArrowRight className="h-4 w-4" />
+                </Link>
+              )}
+            </div>
+          ))}
         </div>
       </section>
 

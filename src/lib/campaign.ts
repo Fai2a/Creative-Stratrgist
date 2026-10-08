@@ -4,6 +4,7 @@ import type {
   CompetitorInput,
   ContentResponse,
 } from "@/lib/schemas";
+import { DEFAULT_PLATFORMS, type PlatformId } from "@/lib/platforms";
 
 export type CampaignMode = "brand" | "general";
 export type Gender = "all" | "male" | "female";
@@ -98,6 +99,7 @@ export interface WizardState {
   goal: string;
   campaignLengthDays: number;
   userBudgetCap: string;
+  platforms: PlatformId[];
   budgetResult: BudgetResponse | null;
 }
 
@@ -123,6 +125,7 @@ export const INITIAL_WIZARD_STATE: WizardState = {
   goal: "sales",
   campaignLengthDays: 30,
   userBudgetCap: "",
+  platforms: DEFAULT_PLATFORMS,
   budgetResult: null,
 };
 

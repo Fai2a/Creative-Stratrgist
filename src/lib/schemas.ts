@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { PLATFORM_IDS } from "@/lib/platforms";
 
 // ---------------------------------------------------------------------------
 // POST /api/description
@@ -44,6 +45,7 @@ export const BudgetRequestSchema = z.object({
   campaign_length_days: z.number().int().positive(),
   audience_size_estimate: z.number().positive(),
   user_budget_cap: z.number().positive().nullable(),
+  platforms: z.array(z.enum(PLATFORM_IDS)).min(1),
 });
 export type BudgetRequest = z.infer<typeof BudgetRequestSchema>;
 
